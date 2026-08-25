@@ -1,2 +1,4 @@
 reportlab
 python-barcode
+streamlit
+pdf2image

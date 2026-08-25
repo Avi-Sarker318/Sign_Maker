@@ -142,3 +142,42 @@ untouched.
 Both options end up in the same place: one always-current PDF per prefix,
 per sign type, sorted by number regardless of what order things were added
 in, available at the same two Releases links every time.
+
+## Giving people a link they can just open - no download, no GitHub account
+
+Everything above (the `.exe`, and the GitHub Actions pipeline) still means
+someone downloads a file at the end. If you want people to open a link and
+use the tool directly in their browser - nothing downloaded, ever, not even
+a PDF until they choose to - deploy the web version (`streamlit_app.py`)
+using Streamlit Community Cloud. It's free and connects straight to this
+repo.
+
+### One-time setup
+
+1. Go to https://share.streamlit.io and sign in with your GitHub account
+   (the same one this repo lives in).
+2. Click **Create app** (sometimes labeled **New app**).
+3. Choose **"Deploy a public app from GitHub"**, then pick:
+   - **Repository**: your `sign-maker` repo
+   - **Branch**: `main`
+   - **Main file path**: `streamlit_app.py`
+4. Click **Deploy**. It takes 1-2 minutes the first time (it's installing
+   `requirements.txt` and the `poppler-utils` system package listed in
+   `packages.txt`, which the live preview needs).
+5. You'll get a URL like `https://sign-maker-yourname.streamlit.app`. That's
+   the link - send it to anyone. They open it in any browser, on any device,
+   and can start adding labels immediately.
+
+### What's different about the web version
+
+- **No install, ever** - not Python, not the app, nothing. Just a link.
+- The label list only lasts for **your current browser tab's visit** - it's
+  a shared public app, not a program running on someone's own computer, so
+  there's nowhere per-person to remember a list between visits like the
+  desktop app does. Add your labels and download the PDFs before closing
+  the tab.
+- The free tier "sleeps" after a period of no visitors and takes ~20-30
+  seconds to wake back up on the next visit - normal, not a bug.
+- Updating it later is automatic: push a change to `streamlit_app.py` (or
+  any file it depends on) and the live app redeploys itself within a minute
+  or two, no separate action needed.
