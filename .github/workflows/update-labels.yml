@@ -1,0 +1,61 @@
+name: Update sign labels
+
+# Lets you add labels straight from the GitHub website - no computer, no
+# software, works from a phone browser. Go to the Actions tab, choose this
+# workflow, click "Run workflow", pick Sticky or Hanging, type your labels
+# in, and click the green button.
+#
+# This only updates signs/sticky-labels.txt or signs/hanging-labels.txt. The
+# separate "Build & publish signs" workflow notices the change and rebuilds
+# the PDFs for whichever sign type changed.
+on:
+  workflow_dispatch:
+    inputs:
+      sign_type:
+        description: "Which kind of sign are you adding to?"
+        required: true
+        default: "sticky"
+        type: choice
+        options:
+          - sticky
+          - hanging
+      add_labels:
+        description: 'Labels/ranges to add, comma or space separated (e.g. "2-031:035, 2-040:047")'
+        required: false
+        default: ""
+      start_new:
+        description: "Start a brand-new list (replaces everything currently in that file)"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  update-labels:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Update the label list
+        run: |
+          python scripts/update_labels.py --file "signs/${{ inputs.sign_type }}-labels.txt" \
+            --add "${{ inputs.add_labels }}" \
+            ${{ inputs.start_new && '--start-new' || '' }}
+
+      - name: Commit the updated list
+        run: |
+          git config user.name "sign-maker-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add "signs/${{ inputs.sign_type }}-labels.txt"
+          if git diff --cached --quiet; then
+            echo "Nothing changed - not committing."
+          else
+            git commit -m "Update ${{ inputs.sign_type }} sign labels (add: '${{ inputs.add_labels }}', start new: ${{ inputs.start_new }})"
+            git push
+          fi

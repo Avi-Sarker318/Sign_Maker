@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+build/
+dist/
+*.spec
+output/
+.venv/
+venv/
+sticky_signs_history.json
+sticky_signs_current_labels.json
+hanging_signs_history.json
+hanging_signs_current_labels.json
+sign_maker_settings.json
+signs/sticky-pdfs/
+signs/hanging-pdfs/

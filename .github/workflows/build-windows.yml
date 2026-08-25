@@ -1,0 +1,49 @@
+name: Build Windows app
+
+# Runs automatically whenever you push a tag like v1.0.0
+# (git tag v1.0.0 && git push origin v1.0.0)
+# It builds SignMaker.exe (Sticky Signs + Hanging Signs, both in one app) on
+# a free GitHub-hosted Windows machine and attaches it to a new GitHub
+# Release - nobody needs Python installed.
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch: {}   # lets you also trigger it manually from the Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install reportlab python-barcode pyinstaller
+
+      - name: Build SignMaker.exe
+        run: |
+          pyinstaller --onefile --windowed --name SignMaker sign_maker_gui.py
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SignMaker-windows
+          path: dist/SignMaker.exe
+
+      - name: Attach to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/SignMaker.exe
+          generate_release_notes: true

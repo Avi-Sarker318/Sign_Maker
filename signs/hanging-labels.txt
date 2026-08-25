@@ -1,0 +1,9 @@
+# Hanging Signs master label list.
+# One label or range per line (ranges like a-001:010 are fine). Lines
+# starting with # are ignored.
+#
+# You can edit this file directly right here on GitHub (click the pencil
+# icon, add or change a line, commit) or use the "Update sign labels"
+# Action instead. Either way, the "Build & publish signs" Action notices
+# the change and rebuilds the PDFs automatically - see the Releases page
+# for the result (look for "hanging-signs-latest").

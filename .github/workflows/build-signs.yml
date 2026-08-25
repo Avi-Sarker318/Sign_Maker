@@ -1,0 +1,59 @@
+name: Build & publish signs
+
+# Rebuilds sign PDFs whenever either label file changes - signs/sticky-
+# labels.txt or signs/hanging-labels.txt - whether that change came from the
+# "Update sign labels" workflow or from someone editing a file directly on
+# GitHub. Each sign type is published to its own stable Release
+# ("sticky-signs-latest" / "hanging-signs-latest") whose link never changes,
+# so people can bookmark it and always get the newest, complete,
+# correctly-sorted PDFs. No installation needed anywhere - just a browser.
+on:
+  push:
+    paths:
+      - "signs/sticky-labels.txt"
+      - "signs/hanging-labels.txt"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install reportlab python-barcode
+
+      - name: Generate Sticky Signs PDFs
+        continue-on-error: true
+        run: python generate_sticky_signs.py --file signs/sticky-labels.txt --output-dir signs/sticky-pdfs
+
+      - name: Generate Hanging Signs PDFs
+        continue-on-error: true
+        run: python generate_hanging_signs.py --file signs/hanging-labels.txt --output-dir signs/hanging-pdfs
+
+      - name: Publish "sticky-signs-latest" release
+        if: hashFiles('signs/sticky-pdfs/*.pdf') != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete sticky-signs-latest --yes || true
+          gh release create sticky-signs-latest signs/sticky-pdfs/*.pdf \
+            --title "Latest Sticky Signs" \
+            --notes "Always reflects everything currently in signs/sticky-labels.txt. Auto-generated - don't edit these files directly."
+
+      - name: Publish "hanging-signs-latest" release
+        if: hashFiles('signs/hanging-pdfs/*.pdf') != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete hanging-signs-latest --yes || true
+          gh release create hanging-signs-latest signs/hanging-pdfs/*.pdf \
+            --title "Latest Hanging Signs" \
+            --notes "Always reflects everything currently in signs/hanging-labels.txt. Auto-generated - don't edit these files directly."
