@@ -103,6 +103,41 @@ st.caption(
     "This list stays for your current visit - download your PDFs before you close the tab."
 )
 
+def _add_label_callback(sign_type):
+    """
+    Runs when "+ Add" is clicked, *before* the page redraws. Widget values
+    can only be changed programmatically from inside a callback like this -
+    doing it later in the main script body (after the widgets are already
+    drawn) is what caused the crash.
+    """
+    prefix_key, start_key, end_key = f"prefix_{sign_type}", f"start_{sign_type}", f"end_{sign_type}"
+    prefix_val = st.session_state.get(prefix_key, "").strip()
+    start_val = st.session_state.get(start_key, "").strip()
+    end_val = st.session_state.get(end_key, "").strip()
+
+    if not prefix_val:
+        st.session_state[f"warning_{sign_type}"] = 'Type or choose what the sign "starts with" first (e.g. "a").'
+        return
+    if not start_val:
+        st.session_state[f"warning_{sign_type}"] = 'Type a number (e.g. "001").'
+        return
+    if not start_val.isdigit() or (end_val and not end_val.isdigit()):
+        st.session_state[f"warning_{sign_type}"] = "The number field(s) should contain digits only, e.g. 001."
+        return
+
+    st.session_state[f"warning_{sign_type}"] = None
+    token = f"{prefix_val}-{start_val}:{end_val}" if end_val else f"{prefix_val}-{start_val}"
+    current_labels = get_labels(sign_type)
+    if token not in current_labels:
+        current_labels.append(token)
+
+    if end_val:
+        st.session_state[start_key] = increment_number(end_val)
+        st.session_state[end_key] = ""
+    else:
+        st.session_state[start_key] = increment_number(start_val)
+
+
 col1, col2, col3, col4 = st.columns([2, 2, 2, 1])
 with col1:
     prefix = st.text_input("Starts with", key=f"prefix_{sign_type}", placeholder="a")
@@ -113,28 +148,14 @@ with col3:
 with col4:
     st.write("")
     st.write("")
-    add_clicked = st.button("+ Add", type="primary", use_container_width=True)
+    st.button(
+        "+ Add", type="primary", use_container_width=True,
+        on_click=_add_label_callback, args=(sign_type,),
+    )
 
-if add_clicked:
-    prefix_val = prefix.strip()
-    start_val = start.strip()
-    end_val = end.strip()
-    if not prefix_val:
-        st.warning('Type or choose what the sign "starts with" first (e.g. "a").')
-    elif not start_val:
-        st.warning('Type a number (e.g. "001").')
-    elif not start_val.isdigit() or (end_val and not end_val.isdigit()):
-        st.warning("The number field(s) should contain digits only, e.g. 001.")
-    else:
-        token = f"{prefix_val}-{start_val}:{end_val}" if end_val else f"{prefix_val}-{start_val}"
-        if token not in labels:
-            labels.append(token)
-        if end_val:
-            st.session_state[f"start_{sign_type}"] = increment_number(end_val)
-            st.session_state[f"end_{sign_type}"] = ""
-        else:
-            st.session_state[f"start_{sign_type}"] = increment_number(start_val)
-        st.rerun()
+warning_message = st.session_state.get(f"warning_{sign_type}")
+if warning_message:
+    st.warning(warning_message)
 
 if labels:
     st.write(f"**{len(labels)}** entr{'y' if len(labels) == 1 else 'ies'} added:")
