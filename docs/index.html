@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign Maker</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="app-header">
+  <h1>&#128203; Sign Maker</h1>
+  <p>Choose a sign type, add your labels, and create printable PDFs - right in your browser.</p>
+</header>
+
+<main>
+
+  <!-- Sign type selector -->
+  <section class="card">
+    <h2>What are you making?</h2>
+    <p class="muted">Pick one - you can switch anytime, and each keeps its own list (saved in this browser).</p>
+    <div class="type-selector">
+      <button class="type-button" data-type="sticky">
+        <span class="type-icon">&#127991;&#65039;</span>
+        <span class="type-title">Sticky Signs</span>
+        <span class="type-tagline">Two signs per sheet, stacked - small barcode labels.</span>
+      </button>
+      <button class="type-button" data-type="hanging">
+        <span class="type-icon">&#129668;</span>
+        <span class="type-title">Hanging Signs</span>
+        <span class="type-tagline">One full landscape sheet per label - big overhead signs.</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- Step 1: add labels -->
+  <section class="card">
+    <div class="step-header">
+      <span class="step-badge">1</span>
+      <div>
+        <h2>Add your sign labels</h2>
+        <p class="muted">Signs that start the same way (like "a") get grouped into one PDF together.
+          Your list is saved in this browser, so you can add more later - even out of order - and
+          everything will still print sorted by number.</p>
+      </div>
+    </div>
+
+    <div class="quick-add-box">
+      <div class="quick-add-row">
+        <label>Starts with
+          <input type="text" id="prefix-input" list="prefix-suggestions" placeholder="a">
+          <datalist id="prefix-suggestions"></datalist>
+        </label>
+        <label>Number
+          <input type="text" id="start-input" placeholder="001">
+        </label>
+        <label>Up to (optional)
+          <input type="text" id="end-input" placeholder="010">
+        </label>
+        <button id="add-btn" class="btn btn-primary">+ Add</button>
+      </div>
+      <p class="hint">Example: Starts with "a", Number "001" &rarr; adds a-001, then gets ready for the
+        next one so you can keep clicking + Add. Fill in "Up to" as well to add a whole batch at once.</p>
+      <p class="warning-text" id="quick-add-warning"></p>
+    </div>
+
+    <ul class="label-list" id="label-list"></ul>
+    <p class="count-label" id="count-label">No sign labels added yet.</p>
+
+    <div class="list-actions">
+      <button id="remove-selected-btn" class="btn btn-secondary">Remove selected</button>
+      <button id="remove-all-btn" class="btn btn-secondary">Remove all</button>
+    </div>
+
+    <button id="paste-toggle" class="link-button">Advanced: paste a list instead &rarr;</button>
+    <div class="paste-box hidden" id="paste-box">
+      <p class="muted">One label or range per line (commas also work). Ranges like a-001:010 are fine too.</p>
+      <textarea id="paste-textarea" rows="6" placeholder="a-001&#10;a-002&#10;c-001:004"></textarea>
+      <button id="paste-add-btn" class="btn btn-secondary">Add these</button>
+    </div>
+  </section>
+
+  <!-- Live preview -->
+  <section class="card">
+    <div class="preview-header">
+      <h2>&#128444;&#65039; Live preview</h2>
+      <span id="preview-caption" class="muted"></span>
+    </div>
+    <p class="muted">This is what one printed sign will actually look like, to scale.</p>
+    <canvas id="preview-canvas" width="460" height="291"></canvas>
+    <p class="muted small">Note: the barcode always prints at the same size, no matter how many digits
+      the label has - longer labels just get thinner bars.</p>
+  </section>
+
+  <!-- Step 2: generate -->
+  <section class="card">
+    <div class="step-header">
+      <span class="step-badge">2</span>
+      <div>
+        <h2>Create your signs</h2>
+        <p class="muted">Downloads a single .zip with one PDF per group, ready to print.</p>
+      </div>
+    </div>
+    <button id="generate-btn" class="btn btn-success">&#128424; Create My Signs</button>
+    <p class="status" id="status-message"></p>
+  </section>
+
+  <footer>
+    <p class="muted small">Everything happens in your browser - nothing is uploaded anywhere.
+      Your label list is saved locally on this device only.</p>
+  </footer>
+
+</main>
+
+<script src="js/vendor/jspdf.umd.min.js"></script>
+<script src="js/vendor/jszip.min.js"></script>
+<script src="js/code128.js"></script>
+<script src="js/signs-common.js"></script>
+<script src="js/sign-layout.js"></script>
+<script src="js/preview.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

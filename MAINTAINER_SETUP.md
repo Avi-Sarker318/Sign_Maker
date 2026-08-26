@@ -148,36 +148,57 @@ in, available at the same two Releases links every time.
 Everything above (the `.exe`, and the GitHub Actions pipeline) still means
 someone downloads a file at the end. If you want people to open a link and
 use the tool directly in their browser - nothing downloaded, ever, not even
-a PDF until they choose to - deploy the web version (`streamlit_app.py`)
-using Streamlit Community Cloud. It's free and connects straight to this
-repo.
+a PDF until they choose to - there's a web version in the `docs/` folder,
+built with plain HTML/JavaScript (no Python, no server). It's hosted for
+free with **GitHub Pages**, directly from this same repo.
+
+This isn't a lightweight copy of the desktop app - it's the same barcode
+encoding, the same PDF layout math, and the same live preview, just running
+entirely inside the visitor's browser instead of on a downloaded program.
+Every label they add, every PDF generated, and the barcodes themselves are
+built client-side; nothing is ever uploaded anywhere.
 
 ### One-time setup
 
-1. Go to https://share.streamlit.io and sign in with your GitHub account
-   (the same one this repo lives in).
-2. Click **Create app** (sometimes labeled **New app**).
-3. Choose **"Deploy a public app from GitHub"**, then pick:
-   - **Repository**: your `sign-maker` repo
-   - **Branch**: `main`
-   - **Main file path**: `streamlit_app.py`
-4. Click **Deploy**. It takes 1-2 minutes the first time (it's installing
-   `requirements.txt` and the `poppler-utils` system package listed in
-   `packages.txt`, which the live preview needs).
-5. You'll get a URL like `https://sign-maker-yourname.streamlit.app`. That's
-   the link - send it to anyone. They open it in any browser, on any device,
-   and can start adding labels immediately.
+1. Push this repo to GitHub as described above - the `docs/` folder is
+   already included.
+2. Go to **Settings \u2192 Pages** (left sidebar).
+3. Under **Build and deployment \u2192 Source**, choose **"Deploy from a
+   branch"**.
+4. Under **Branch**, choose **main** and **/docs**, then click **Save**.
+5. Wait about 1 minute, then refresh the page - GitHub shows you the live
+   URL, something like `https://your-username.github.io/sign-maker/`. Send
+   that link to anyone. They open it in any browser, on any device, and can
+   start adding labels immediately.
 
 ### What's different about the web version
 
 - **No install, ever** - not Python, not the app, nothing. Just a link.
-- The label list only lasts for **your current browser tab's visit** - it's
-  a shared public app, not a program running on someone's own computer, so
-  there's nowhere per-person to remember a list between visits like the
-  desktop app does. Add your labels and download the PDFs before closing
-  the tab.
-- The free tier "sleeps" after a period of no visitors and takes ~20-30
-  seconds to wake back up on the next visit - normal, not a bug.
-- Updating it later is automatic: push a change to `streamlit_app.py` (or
-  any file it depends on) and the live app redeploys itself within a minute
-  or two, no separate action needed.
+- **Never sleeps, no cold start** - unlike a hosted Python app, a GitHub
+  Pages site is just static files. It loads instantly, every time.
+- **Your label list is remembered per-device** - it's saved in that
+  browser's local storage, so closing the tab and coming back later on the
+  *same device* still has everything you added. (A different device or
+  browser starts fresh, since there's no shared account or database - this
+  is a static site, not a multi-user service.)
+- **Nothing is ever sent to a server** - barcode generation and PDF creation
+  both happen entirely on the visitor's own device. This is actually more
+  private than a hosted Python app, since there's no server in the loop at
+  all after the page first loads.
+- Updating it later is automatic-ish: push a change to anything in `docs/`
+  and the live site updates within a minute or two of GitHub Pages
+  rebuilding - no dashboard, no redeploy button, nothing else needed.
+
+### How it works, if you're curious
+
+`docs/js/code128.js` is a from-scratch Code128 barcode encoder (the same
+standard barcode format the Python `python-barcode` library produces) -
+verified to generate correct, genuinely scannable barcodes. `docs/js/sign-
+layout.js` ports the exact same page-layout measurements from
+`sticky_signs_core.py` and `hanging_signs_core.py` into JavaScript, using
+the `jsPDF` library (vendored locally in `docs/js/vendor/`, not loaded from
+a CDN, so the site has zero external dependencies) to actually draw the
+PDF pages. `docs/js/app.js` is the page logic - the sign-type switcher,
+Quick Add, and the download flow, which bundles each prefix's PDF into one
+`.zip` using the `JSZip` library (also vendored locally).
+

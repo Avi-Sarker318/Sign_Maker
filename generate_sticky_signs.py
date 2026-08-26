@@ -60,7 +60,7 @@ from sticky_signs_core import generate_signs
 #     ]
 # ---------------------------------------------------------------------------
 LABELS = [
-'2-039', '2-040'
+    
 ]
 
 OUTPUT_DIR = Path("output")
